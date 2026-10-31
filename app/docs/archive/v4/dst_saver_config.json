@@ -1,0 +1,11 @@
+{
+  "close_action": "tray",
+  "save_dir": "d:\\software\\steam\\userdata\\1222722443\\219740\\remote",
+  "theme_mode": "auto",
+  "font_size": 18,
+  "backup_root": "D:\\Tools\\饥荒单机版存档备份\\backups",
+  "keep": 10,
+  "keep_auto": 5,
+  "accent": "moss",
+  "auto_backup": true
+}

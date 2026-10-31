@@ -1,0 +1,358 @@
+:root[data-mantine-color-scheme='light'] {
+  color-scheme: light;
+}
+
+:root[data-mantine-color-scheme='dark'] {
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  /* 固定 16px：Mantine 的 rem 尺寸全是 16 的整数倍。
+     根字号不再随"字号档位"变化（那会把按钮高度算成 38.25px 这种小数），
+     档位改由 --ds-fs-* 四档 token 表达，见 theme/resolver.ts */
+  font-size: 16px;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  overflow: hidden;
+  background: var(--ds-bg);
+  color: var(--ds-text);
+  font-family: var(--ds-font-body);
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--ds-accent) 28%, transparent);
+}
+
+*:focus-visible {
+  outline: 2px solid var(--ds-focus);
+  outline-offset: 1px;
+}
+
+/* ---------- 滚动条 ---------- */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--ds-hairline-strong) transparent;
+}
+
+/* ---------- 全局滚动条（唯一一段：设置页/弹窗内容同款） ---------- */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* 胶囊形：radius 用字面量，不进主题 radius 体系 */
+::-webkit-scrollbar-thumb {
+  background: var(--ds-hairline);
+  border: 2px solid transparent;
+  border-radius: 4px;
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ds-text-faint);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+/* ---------- Mantine 覆盖 ---------- */
+.mantine-Button-root {
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  transition: background-color var(--ds-t-fast) ease, border-color var(--ds-t-fast) ease, color var(--ds-t-fast) ease;
+}
+
+.mantine-Button-root[data-variant='filled'] {
+  color: var(--ds-on-accent);
+}
+
+.mantine-Button-root[data-variant='filled']:hover {
+  background-color: var(--ds-accent-hover);
+}
+
+.mantine-Button-root[data-variant='filled']:active {
+  background-color: var(--ds-accent-active);
+}
+
+.mantine-Button-root[data-variant='default'] {
+  background-color: var(--ds-surface);
+  border-color: var(--ds-hairline-strong);
+  color: var(--ds-text);
+}
+
+.mantine-Input-input {
+  background-color: var(--ds-surface);
+  border-color: var(--ds-hairline-strong);
+  color: var(--ds-text);
+}
+
+.mantine-Input-input::placeholder {
+  color: var(--ds-text-faint);
+}
+
+.mantine-Modal-content {
+  background-color: var(--ds-surface);
+  border: 1px solid var(--ds-hairline);
+}
+
+.mantine-Modal-header {
+  background-color: transparent;
+}
+
+.mantine-Modal-title {
+  font-family: var(--ds-font-display);
+  letter-spacing: var(--ds-heading-track);
+}
+
+.mantine-Notification-root {
+  background-color: var(--ds-surface);
+  border: 1px solid var(--ds-hairline);
+  box-shadow: 0 10px 30px rgb(0 0 0 / 22%);
+}
+
+.mantine-Tooltip-tooltip {
+  background-color: var(--ds-surface);
+  border: 1px solid var(--ds-hairline);
+  color: var(--ds-text);
+  font-size: var(--ds-fs-meta);
+}
+
+.mantine-Spotlight-content {
+  background-color: var(--ds-surface);
+  border: 1px solid var(--ds-hairline);
+}
+
+.mantine-Spotlight-search {
+  background-color: transparent;
+}
+
+.mantine-Spotlight-action {
+  border-radius: var(--ds-radius);
+}
+
+.mantine-Table-tr:hover {
+  background-color: var(--ds-surface-hover);
+}
+
+.mantine-Menu-dropdown {
+  background-color: var(--ds-surface);
+  border: 1px solid var(--ds-hairline);
+}
+
+.mantine-Popover-dropdown {
+  background-color: var(--ds-surface);
+  border: 1px solid var(--ds-hairline);
+}
+
+/* ---------- AppShell ---------- */
+.mantine-AppShell-main {
+  height: calc(100dvh - var(--ds-header-h));
+  overflow: hidden;
+}
+
+/* ---------- 时间轴行操作 ---------- */
+.ds-row-actions {
+  opacity: 0.68;
+  transition: opacity var(--ds-t-fast) ease;
+}
+
+.ds-row:hover .ds-row-actions {
+  opacity: 1;
+}
+
+.ds-kbd {
+  display: inline-block;
+  min-width: 22px;
+  padding: 2px 5px;
+  border: 1px solid var(--ds-hairline);
+  border-bottom-width: 2px;
+  /* 键帽微元素：刻意比主题 radius 小一档，不进 radius 体系 */
+  border-radius: 3px;
+  background: var(--ds-surface);
+  color: var(--ds-text-dim);
+  font-family: var(--ds-font-mono);
+  font-size: var(--ds-fs-micro);
+  line-height: 1.3;
+  text-align: center;
+}
+
+/* ---------- 图标按钮 ---------- */
+.ds-spin {
+  animation: ds-spin 600ms ease;
+}
+
+@keyframes ds-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ds-spin { animation: none; }
+  .ds-candidate { animation: none; }
+}
+.ds-iconbtn {
+  transition: background-color var(--ds-t-fast) ease, color var(--ds-t-fast) ease, box-shadow var(--ds-t-fast) ease;
+}
+
+.ds-iconbtn[data-active='true'] {
+  background-color: color-mix(in srgb, var(--ds-accent) 18%, var(--ds-surface));
+  color: var(--ds-accent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ds-accent) 45%, transparent);
+}
+
+.ds-iconbtn[data-active='true']:hover {
+  background-color: color-mix(in srgb, var(--ds-accent) 24%, var(--ds-surface));
+}
+
+/* 开关类图标：只染图标 + 很淡的底，不加描边，避免和导航选中态混淆 */
+.ds-iconbtn[data-on='true'] {
+  color: var(--ds-accent);
+  background-color: color-mix(in srgb, var(--ds-accent) 9%, transparent);
+}
+
+.ds-iconbtn[data-on='true']:hover {
+  background-color: color-mix(in srgb, var(--ds-accent) 15%, transparent);
+}
+
+/* ---------- 工具类 ---------- */
+.ds-mono {
+  font-family: var(--ds-font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.ds-display {
+  font-family: var(--ds-font-display);
+  letter-spacing: var(--ds-heading-track);
+}
+
+.ds-sunken {
+  background-color: var(--ds-bg-sunken);
+}
+
+.ds-hairline {
+  border-color: var(--ds-hairline);
+}
+
+.ds-drag {
+  -webkit-app-region: no-drag;
+}
+
+/* Modal 初始焦点落在 data-autofocus 容器上，不该出现按钮的"选中"外框 */
+[data-autofocus]:focus {
+  outline: none;
+}
+
+/* 候选目录行：多行内容，不能复用时间轴的固定 38px 行（.ds-row） */
+.ds-candidate {
+  border: 0.5px solid var(--ds-hairline);
+  border-radius: calc(var(--ds-radius) * 2);
+  cursor: pointer;
+  transition: background-color var(--ds-t-fast) ease, border-color var(--ds-t-fast) ease;
+  animation: ds-fade-in var(--ds-t-med) ease both;
+}
+.ds-candidate:hover {
+  background: var(--ds-surface-hover);
+}
+.ds-candidate[data-active='true'] {
+  background: var(--ds-surface-hover);
+  border-color: var(--ds-accent);
+}
+
+/* 列表项进入：淡入 + 轻微上移，克制丝滑 */
+@keyframes ds-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+}
+
+/* 设置页栏目卡片：把相关 Row 归组，视觉上成"卡片"而非流水 */
+.ds-settings-card {
+  background: var(--ds-surface);
+  border: 0.5px solid var(--ds-hairline);
+  border-radius: calc(var(--ds-radius) * 2);
+  padding: var(--ds-space-md, 14px) 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ---------- 卡片式单选（设置页档位类选项统一控件） ---------- */
+.ds-option-card {
+  background: var(--ds-surface);
+  border: 0.5px solid var(--ds-hairline);
+  border-radius: calc(var(--ds-radius) * 2);
+  cursor: pointer;
+  transition:
+    background-color var(--ds-t-fast) ease,
+    border-color var(--ds-t-fast) ease;
+}
+
+.ds-option-card:hover {
+  background: var(--ds-surface-hover);
+}
+
+.ds-option-card[data-active='true'] {
+  border-color: var(--ds-accent);
+  background: var(--ds-surface-hover);
+}
+
+.ds-option-card[data-active='true'] .mantine-Radio-indicator {
+  border-color: var(--ds-accent);
+}
+
+/* toast 贴右边缘（默认 16px 略缩） */
+.m_b37d9ac7:where([data-position='bottom-right']) {
+  right: 8px;
+}
+
+.m_b37d9ac7:where([data-position='bottom-right']) .mantine-Notification {
+  margin-left: auto;
+}
+
+
+
+/* ---------- 备份表格：粘滞操作格背景跟随行态（与行背景完全一致，杜绝色块） ---------- */
+.ds-row > td[style*='sticky'] {
+  background-color: transparent;
+}
+
+.ds-row:hover > td[style*='sticky'] {
+  background-color: var(--ds-surface-hover);
+}
+
+.ds-row[data-selected='true'] > td[style*='sticky'] {
+  background-color: color-mix(in srgb, var(--ds-accent) 10%, var(--ds-surface));
+}
+
+/* ---------- Mod 列表行：悬停提亮，操作按钮默认收敛 ---------- */
+.ds-mod-row:hover {
+  background: var(--ds-surface-hover);
+}
+
+.ds-mod-row .ds-mod-actions {
+  opacity: 0.45;
+  transition: opacity var(--ds-t-fast) ease;
+}
+
+.ds-mod-row:hover .ds-mod-actions {
+  opacity: 1;
+}

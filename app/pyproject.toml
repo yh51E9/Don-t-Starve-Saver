@@ -1,0 +1,18 @@
+[project]
+name = "ds-saver"
+version = "1.0.0"
+description = "饥荒单机版存档备份工具"
+requires-python = ">=3.13"
+dependencies = [
+    "pywebview==6.2.1",
+    "pillow>=11.0",
+    "pystray>=0.19",
+    "py7zr>=1.1.4",
+    "rarfile>=4.5",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "pyinstaller>=6.10",
+]

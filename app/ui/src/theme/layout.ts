@@ -1,0 +1,22 @@
+/** 布局尺寸的唯一来源。resolver 与 AppShell 都从这里取，避免三处各写一个 56。 */
+export const LAYOUT = {
+  headerH: 60,
+  railW: 300,
+  railMin: 240,
+  railMax: 460,
+  asideW: 236,
+  asideMin: 200,
+  asideMax: 340,
+  windowW: 1240,
+  windowH: 840,
+  minW: 1100,
+  minH: 760,
+  settingsW: 860,
+  labelW: 148,
+  numberW: 108,
+  selectW: 180,
+  modalSm: 440,
+  modalMd: 460,
+  modalLg: 520,
+  rowH: 38,
+} as const;
