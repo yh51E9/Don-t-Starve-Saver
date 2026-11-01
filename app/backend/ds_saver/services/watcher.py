@@ -56,6 +56,8 @@ class Watcher(threading.Thread):
             return
 
         save_dir = session.save_dir
+        # 重读槽位：游戏新开的存档不在开机缓存里，不刷新就永远巡检不到它
+        session.refresh_worlds()
         worlds = session.worlds_copy()
         if not save_dir or not worlds:
             self._publish("idle")

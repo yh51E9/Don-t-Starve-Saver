@@ -96,6 +96,8 @@ class JsApi:
 
     @guard
     def list_worlds(self):
+        # 先重读 saveindex：否则只返回开机缓存，游戏里新建的槽位永远不出现
+        self._session.refresh_worlds()
         return {"worlds": self._session.worlds_payload(),
                 "selected_slot": self._session.selected_id}
 

@@ -16,6 +16,8 @@ from ds_saver.services.session import Session
 @pytest.fixture
 def api(isolated_paths, save_dir, monkeypatch):
     monkeypatch.setattr(scan, "locate_save_dirs", lambda: [str(save_dir)])
+    # 测试与真实环境隔离：本机开着游戏时 delete_save 会因 GAME_RUNNING 拒绝
+    monkeypatch.setattr(store, "is_game_running", lambda *a, **k: False)
     bus = EventBus()
     session = Session(bus)
     runner = JobRunner(bus, session)

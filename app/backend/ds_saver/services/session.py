@@ -81,12 +81,19 @@ class Session:
         if not path:
             return
         worlds = store_worlds(path)
+        changed = False
         with self._lock:
-            self.worlds = worlds
+            if worlds != self.worlds:
+                self.worlds = worlds
+                changed = True
             ids = [str(world["index"]) for world in worlds]
             if self.selected_id not in ids:
                 self.selected_id = ids[0] if ids else None
-        self._bus.emit("data.worlds_changed")
+                changed = True
+        # 只在真变化时广播：list_worlds 每次刷新都调本函数，
+        # 无条件 emit 会让前端 scheduleRefresh -> list_worlds 转圈
+        if changed:
+            self._bus.emit("data.worlds_changed")
 
     # ---------- 世界 ----------
 

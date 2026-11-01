@@ -26,6 +26,9 @@ class FakeSession:
         self.cfg = cfg
         self.watcher_state = {"state": "idle", "last_tick_at": 0.0}
 
+    def refresh_worlds(self):
+        """watcher 每拍会重读槽位；假会话的世界是静态的，空实现即可。"""
+
     def worlds_copy(self):
         return list(self.worlds)
 
