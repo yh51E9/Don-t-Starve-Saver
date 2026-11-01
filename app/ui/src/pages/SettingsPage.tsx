@@ -134,6 +134,7 @@ export function SettingsPage() {
   const [changelog, setChangelog] = useState('');
   const [shortcuts, setShortcuts] = useState<ShortcutDef[]>(() => activeShortcuts());
   const [capturing, setCapturing] = useState<ShortcutAction | null>(null);
+  const [shortcutQuery, setShortcutQuery] = useState('');
   const [activeSec, setActiveSec] = useState(NAV_ITEMS[0].id);
   const scrollRef = useRef<HTMLDivElement>(null);
   const programmaticUntil = useRef(0);
@@ -674,43 +675,85 @@ export function SettingsPage() {
 
             <Box id="sec-shortcuts" mt="xl">
               <Section icon={<IconKeyboard size={16} stroke={2.2} color="var(--ds-accent)" />} title="快捷键" size="md">
-                <Stack gap={12} w="100%">
-                  <Text fz="var(--ds-fs-micro)" c="var(--ds-text-faint)" lh={1.6}>
-                    点击键位框，按下新的组合键即可修改（Esc 取消）。快捷键只在主界面生效，输入框内打字时不会触发。
-                  </Text>
-                  {shortcuts.map((item) => (
-                    <Group key={item.id} justify="space-between" wrap="nowrap" gap={12}>
-                      <Box style={{ minWidth: 0 }}>
-                        <Text fz="var(--ds-fs-meta)">{item.label}</Text>
-                        <Text fz="var(--ds-fs-micro)" c="var(--ds-text-faint)">{item.hint}</Text>
-                      </Box>
+                <Row label="按键一览" hint="点击键位框后按下新组合键即可修改（Esc 取消）。快捷键只在主界面生效，输入框内打字时不会触发。">
+                  <Stack gap={10}>
+                    {/* 快捷键多了以后才出现筛选框：现在 4 条不占地方 */}
+                    {shortcuts.length > 8 && (
+                      <TextInput
+                        size="xs"
+                        placeholder="筛选快捷键…"
+                        value={shortcutQuery}
+                        onChange={(event) => setShortcutQuery(event.currentTarget.value)}
+                      />
+                    )}
+                    <Group gap={8} wrap="wrap" w="100%" align="stretch">
+                      {shortcuts
+                        .filter((item) => {
+                          const q = shortcutQuery.trim().toLowerCase();
+                          if (!q) return true;
+                          return item.label.toLowerCase().includes(q)
+                            || item.hint.toLowerCase().includes(q)
+                            || formatCombo(item.combo).toLowerCase().includes(q);
+                        })
+                        .map((item) => {
+                          const Icon = item.icon;
+                          return (
+                            <Box
+                              key={item.id}
+                              p={10}
+                              style={{
+                                // 网格自动换行：条目多了横向摊开，不纵向拉长
+                                flex: '1 1 210px',
+                                minWidth: 190,
+                                background: 'var(--ds-bg-sunken)',
+                                border: '0.5px solid var(--ds-hairline)',
+                                borderRadius: 'calc(var(--ds-radius) * 1.5)',
+                              }}
+                            >
+                              <Stack gap={6}>
+                                <Group gap={6} wrap="nowrap">
+                                  <Icon size={16} stroke={1.8} color="var(--ds-text-dim)" />
+                                  <Text fz="var(--ds-fs-body)" fw={500} truncate>{item.label}</Text>
+                                </Group>
+                                <Text
+                                  fz="var(--ds-fs-micro)"
+                                  c="var(--ds-text-faint)"
+                                  lh={1.45}
+                                  style={{ minHeight: '2.9em' }}
+                                >
+                                  {item.hint}
+                                </Text>
+                                <Button
+                                  variant={capturing === item.id ? 'light' : 'default'}
+                                  color={capturing === item.id ? 'red' : 'gray'}
+                                  size="compact-sm"
+                                  fullWidth
+                                  className="ds-mono"
+                                  onClick={() => setCapturing(capturing === item.id ? null : item.id)}
+                                >
+                                  {capturing === item.id ? '按下新键…' : formatCombo(item.combo)}
+                                </Button>
+                              </Stack>
+                            </Box>
+                          );
+                        })}
+                    </Group>
+                    <Group justify="flex-end">
                       <Button
-                        variant={capturing === item.id ? 'light' : 'default'}
-                        color={capturing === item.id ? 'red' : 'gray'}
-                        size="compact-sm"
-                        miw={120}
-                        className="ds-mono"
-                        onClick={() => setCapturing(capturing === item.id ? null : item.id)}
+                        variant="default"
+                        size="sm"
+                        leftSection={<IconRotate2 size={16} stroke={1.8} />}
+                        onClick={() => {
+                          resetShortcuts();
+                          setShortcuts(activeShortcuts());
+                          setCapturing(null);
+                        }}
                       >
-                        {capturing === item.id ? '按下新键…' : formatCombo(item.combo)}
+                        恢复默认
                       </Button>
                     </Group>
-                  ))}
-                  <Group justify="flex-end">
-                    <Button
-                      variant="default"
-                      size="sm"
-                      leftSection={<IconRotate2 size={16} stroke={1.8} />}
-                      onClick={() => {
-                        resetShortcuts();
-                        setShortcuts(activeShortcuts());
-                        setCapturing(null);
-                      }}
-                    >
-                      恢复默认
-                    </Button>
-                  </Group>
-                </Stack>
+                  </Stack>
+                </Row>
               </Section>
             </Box>
 

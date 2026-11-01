@@ -3,6 +3,12 @@
  *  存储：localStorage `ds:shortcuts` = { actionId: "ctrl+z" }，缺省项即用默认。
  *  主窗每次按键现读存储，设置窗改完立即生效（双窗共享 localStorage）。
  */
+import {
+  IconArrowBackUp,
+  IconArrowBackUpDouble,
+  IconRefresh,
+  IconSearch,
+} from '@tabler/icons-react';
 
 export type ShortcutAction = 'undo' | 'search' | 'backup' | 'refresh';
 
@@ -11,13 +17,14 @@ export interface ShortcutDef {
   label: string;
   hint: string;
   combo: string;
+  icon: typeof IconSearch;
 }
 
 export const DEFAULT_SHORTCUTS: ShortcutDef[] = [
-  { id: 'undo', label: '撤销上一步', hint: '删除存档 / 恢复 / 删备份后反悔', combo: 'ctrl+z' },
-  { id: 'search', label: '搜索', hint: '搜索世界与命令', combo: 'ctrl+f' },
-  { id: 'backup', label: '备份此世界', hint: '给当前选中的世界拍一份快照', combo: 'ctrl+b' },
-  { id: 'refresh', label: '刷新', hint: '重新读取存档目录与备份列表', combo: 'f5' },
+  { id: 'undo', label: '撤销上一步', hint: '删除存档 / 恢复 / 删备份后反悔', combo: 'ctrl+z', icon: IconArrowBackUpDouble },
+  { id: 'search', label: '搜索', hint: '搜索世界与命令', combo: 'ctrl+f', icon: IconSearch },
+  { id: 'backup', label: '备份此世界', hint: '给当前选中的世界拍一份快照', combo: 'ctrl+b', icon: IconArrowBackUp },
+  { id: 'refresh', label: '刷新', hint: '重新读取存档目录与备份列表', combo: 'f5', icon: IconRefresh },
 ];
 
 const KEY = 'ds:shortcuts';
