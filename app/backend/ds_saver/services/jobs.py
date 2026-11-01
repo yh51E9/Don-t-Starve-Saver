@@ -120,6 +120,8 @@ class JobRunner:
             except DsError as exc:
                 with self._lock:
                     job["state"] = "failed"
+                # 预期内失败也留痕：自动备份悄悄失败最难查
+                log.warning("job %s failed: [%s] %s", job_id, exc.code, exc.message)
                 self._bus.emit("job.failed", job_id=job_id, kind=job["kind"],
                                code=exc.code, message=exc.message, detail=exc.detail)
             except Exception as exc:  # noqa: BLE001

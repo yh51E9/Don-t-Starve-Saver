@@ -25,12 +25,17 @@ class FakeSession:
         self.worlds = worlds
         self.cfg = cfg
         self.watcher_state = {"state": "idle", "last_tick_at": 0.0}
+        # 默认已有备份 → 启动首轮只记基线；清空它来测"零备份保底"
+        self.existing_backups = {"1": [{"id": "1:old"}]}
 
     def refresh_worlds(self):
         """watcher 每拍会重读槽位；假会话的世界是静态的，空实现即可。"""
 
     def worlds_copy(self):
         return list(self.worlds)
+
+    def backups(self, slot_id):
+        return list(self.existing_backups.get(str(slot_id), []))
 
 
 @pytest.fixture
@@ -90,6 +95,36 @@ def test_change_tag_follows_game_running(world_dir):
     watcher2._tick()
     watcher2._tick()
     assert runner2.submitted[0][1]["tag"] == "autoexit"
+
+
+def test_new_save_appearing_gets_backed_up(world_dir):
+    """巡检中冒出的新档（建档写盘）写稳后必须打快照，不能当基线吞掉。"""
+    watcher, runner, session, _ = make_watcher(world_dir, {"auto_mode": "change"})
+    watcher._tick()  # 首轮基线（世界 1）
+    assert runner.submitted == []
+
+    # 模拟游戏新建存档：文件先落盘、槽位后登记——正是被旧逻辑吃掉的时序
+    (world_dir / "survival_2").write_bytes(b"y" * 64)
+    session.worlds.append({"index": 2, "files": ["survival_2"]})
+
+    watcher._tick()  # 首见只记候选
+    assert runner.submitted == []
+    watcher._tick()  # 写稳 → 提交
+    assert len(runner.submitted) == 1
+    assert runner.submitted[0][1]["slot_id"] == "2"
+
+
+def test_startup_backfills_world_without_any_backup(world_dir):
+    """零备份的世界启动时补一张保底，已有备份的仍只记基线。"""
+    watcher, runner, session, _ = make_watcher(world_dir, {"auto_mode": "change"})
+    session.existing_backups = {}  # 一份都没有
+
+    watcher._tick()  # 首轮不记基线，走候选
+    assert runner.submitted == []
+    watcher._tick()  # 写稳 → 保底提交
+    assert len(runner.submitted) == 1
+    watcher._tick()  # 已经打过，不再重复
+    assert len(runner.submitted) == 1
 
 
 def test_interval_tag_is_tick(world_dir):
