@@ -144,7 +144,7 @@ interface AppState {
   cleanup: () => Promise<void>;
 
   openRestore: (backup: Backup) => Promise<void>;
-  confirmRestore: () => Promise<void>;
+  confirmRestore: (confirmedIdle: boolean) => Promise<void>;
   openDelete: (backup: Backup) => void;
   confirmDelete: () => Promise<void>;
   restoreLatest: (slotId: string) => Promise<void>;
@@ -718,11 +718,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     try {
       const bridge = await getBridge();
       const preview = await bridge.previewRestore(backup.id);
-      if (preview.game_running) {
-        set({ dialog: null });
-        toast('error', '饥荒正在运行', '请先完全退出游戏再恢复，否则存档会被内存里的进度盖回去');
-        return;
-      }
+      // 游戏在跑不再直接拒：进弹窗由用户勾选「没在玩这个存档」后放行
       set({ dialog: { kind: 'restore', backup, preview, loading: false } });
     } catch (error) {
       set({ dialog: null });
@@ -730,13 +726,13 @@ export const useAppStore = create<AppState>((set, get) => ({
     }
   },
 
-  async confirmRestore() {
+  async confirmRestore(confirmedIdle) {
     const dialog = get().dialog;
     if (!dialog || dialog.kind !== 'restore') return;
     set({ dialog: null });
     try {
       const bridge = await getBridge();
-      await bridge.restore(dialog.backup.id);
+      await bridge.restore(dialog.backup.id, confirmedIdle);
     } catch (error) {
       toast('error', '无法恢复', errorText(error));
     }

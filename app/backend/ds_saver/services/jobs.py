@@ -159,7 +159,8 @@ class JobRunner:
         slot_id, backup_path = store.resolve_backup_id(root, job["params"]["backup_id"])
         world = session.world(slot_id)  # 用备份所属世界，不是"当前选中"
         save_dir = session.save_dir
-        if store.is_game_running(force=True):
+        # 用户勾选过「没在玩这个存档」就跳过复检；没勾过则拦住"提交后游戏才启动"的空档
+        if not job["params"].get("confirmed_idle") and store.is_game_running(force=True):
             raise DsError(ErrorCode.GAME_RUNNING, "检测到饥荒正在运行，请先退出游戏再恢复")
 
         reporter = ProgressReporter(self._bus, job["id"])

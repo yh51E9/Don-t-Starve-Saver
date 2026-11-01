@@ -314,7 +314,7 @@ export interface Bridge {
   exportBackups(backupIds: string[], destPath: string): Promise<{ path: string; count: number; bytes: number }>;
   importScan(path: string): Promise<ImportScan>;
   importBackup(path: string, mode: 'backup' | 'save', entryKey?: string): Promise<{ mode: string; slot_id: string }>;
-  restore(id: string): Promise<{ job_id: string }>;
+  restore(id: string, confirmedIdle?: boolean): Promise<{ job_id: string }>;
   deleteBackup(id: string): Promise<{ deleted: boolean; freed_bytes: number; backups: Backup[]; stats: Stats }>;
   cleanup(scope: 'all' | 'slot', slotId?: string): Promise<{
     job_id: string | null;

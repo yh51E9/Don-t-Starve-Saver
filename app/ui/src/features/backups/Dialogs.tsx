@@ -106,11 +106,13 @@ export function Dialogs() {
   const [confirmText, setConfirmText] = useState('');
   const [withBackups, setWithBackups] = useState(false);
   const [keepLatest, setKeepLatest] = useState(true);
+  const [gameAck, setGameAck] = useState(false);
 
   const kind = dialog?.kind ?? null;
 
   useEffect(() => {
     if (kind === 'close') setRemember(false);
+    if (kind === 'restore') setGameAck(false);
     if (kind === 'deleteSave') {
       setConfirmText('');
       setWithBackups(false);
@@ -196,9 +198,27 @@ export function Dialogs() {
               </Alert>
             )}
 
-            <Text fz="var(--ds-fs-body)" c="var(--ds-text-dim)" lh={1.6}>
-              请确认饥荒已经完全退出，否则游戏会用内存里的进度把它盖回去。
-            </Text>
+            {preview.game_running ? (
+              <Alert color="yellow" variant="light" icon={<IconAlertTriangle size={18} />}>
+                <Stack gap={6}>
+                  <Text fz="var(--ds-fs-meta)" fw={600}>检测到饥荒正在运行</Text>
+                  <Text fz="var(--ds-fs-meta)">
+                    游戏正在玩<b>这个存档</b>的话，恢复会被游戏下一次存盘覆盖回去——那种情况请先退出游戏。
+                    停在主菜单、或正在玩<b>别的存档</b>，现在恢复就是安全的。
+                  </Text>
+                  <Checkbox
+                    size="sm"
+                    checked={gameAck}
+                    onChange={(event) => setGameAck(event.currentTarget.checked)}
+                    label="我确认游戏没有在玩这个存档"
+                  />
+                </Stack>
+              </Alert>
+            ) : (
+              <Text fz="var(--ds-fs-body)" c="var(--ds-text-dim)" lh={1.6}>
+                恢复时请确保饥荒没有运行，否则游戏会用内存里的进度把它盖回去。
+              </Text>
+            )}
             <Text fz="var(--ds-fs-meta)" c="var(--ds-text-faint)" lh={1.6}>
               覆盖前会自动为当前状态拍一份「恢复前」快照，恢复错了还能退回来。
             </Text>
@@ -209,8 +229,8 @@ export function Dialogs() {
           <Button variant="default" size="sm" onClick={closeDialog}>取消</Button>
           <Button
             size="sm"
-            onClick={() => void confirmRestore()}
-            disabled={loading || !preview || (delta !== null && delta > 0)}
+            onClick={() => void confirmRestore(gameAck)}
+            disabled={loading || !preview || (delta !== null && delta > 0) || (preview.game_running && !gameAck)}
           >
             确认恢复
           </Button>

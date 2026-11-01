@@ -112,6 +112,34 @@ def test_preview_restore_includes_game_flag(api):
     assert "game_running" in preview["data"]
 
 
+def test_restore_blocked_while_game_running_without_confirm(api, monkeypatch):
+    """游戏在跑且用户没勾「没在玩这个存档」→ 拦住。"""
+    from ds_saver.core import store
+
+    job_id = api.backup("1")["data"]["job_id"]
+    _wait_job(api, job_id)
+    backup = api.list_backups("1")["data"]["backups"][0]
+    monkeypatch.setattr(store, "is_game_running", lambda *a, **k: True)
+    result = api.restore(backup["id"])
+    assert result["ok"] is False
+    assert result["error"]["code"] == "E_GAME_RUNNING"
+
+
+def test_restore_confirmed_idle_bypasses_game_check(api, monkeypatch):
+    """勾了确认 → 游戏在跑也放行（API 层与任务复检都跳过）。"""
+    from ds_saver.core import store
+
+    job_id = api.backup("1")["data"]["job_id"]
+    _wait_job(api, job_id)
+    backup = api.list_backups("1")["data"]["backups"][0]
+    monkeypatch.setattr(store, "is_game_running", lambda *a, **k: True)
+    result = api.restore(backup["id"], confirmed_idle=True)
+    assert result["ok"] is True
+    _events, done = _wait_job(api, result["data"]["job_id"])
+    assert done["type"] == "job.done"
+    assert done["payload"]["kind"] == "restore"
+
+
 def test_settings_roundtrip(api):
     result = api.save_settings({"theme_preset": "brass", "font_size": 18, "keep": 3})
     assert result["ok"] is True

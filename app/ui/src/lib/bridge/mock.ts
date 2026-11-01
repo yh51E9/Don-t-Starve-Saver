@@ -441,9 +441,9 @@ export function createMock(options: MockOptions = {}): Bridge {
       };
     },
 
-    async restore(id: string) {
+    async restore(id: string, confirmedIdle?: boolean) {
       await wait();
-      if (failOn.has('GAME_RUNNING')) {
+      if (failOn.has('GAME_RUNNING') && !confirmedIdle) {
         throw new ApiError('E_GAME_RUNNING', '检测到饥荒正在运行，请先退出游戏再恢复');
       }
       const backup = findBackup(id);

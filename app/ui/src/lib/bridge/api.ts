@@ -72,7 +72,7 @@ function nativeBridge(): Bridge {
     exportBackups: (backupIds, destPath) => call('export_backups', backupIds, destPath),
     importScan: (path) => call('import_scan', path),
     importBackup: (path, mode, entryKey) => call('import_backup', path, mode, entryKey),
-    restore: (id) => call('restore', id),
+    restore: (id, confirmedIdle) => call('restore', id, confirmedIdle ?? false),
     deleteBackup: (id) => call('delete_backup', id),
     cleanup: (scope, slotId) => call('cleanup', scope, slotId ?? null),
     getSettings: () => call('get_settings'),

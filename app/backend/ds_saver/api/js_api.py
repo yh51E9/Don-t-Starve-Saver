@@ -156,15 +156,18 @@ class JsApi:
         return preview
 
     @guard
-    def restore(self, backup_id):
+    def restore(self, backup_id, confirmed_idle=False):
+        """恢复备份。游戏在跑时默认拒绝；confirmed_idle=True 表示用户已勾选
+        「游戏没在玩这个存档」（在主菜单或玩别的档），放行且跳过运行中复检。"""
         root = self._session.backup_root()
         slot_id, backup_path = store.resolve_backup_id(root, backup_id)
         if not os.path.isdir(backup_path):
             raise DsError(ErrorCode.BACKUP_NOT_FOUND, "这份备份已经不在了")
-        if store.is_game_running():
+        if store.is_game_running() and not confirmed_idle:
             raise DsError(ErrorCode.GAME_RUNNING, "检测到饥荒正在运行，请先退出游戏再恢复")
         store.validate_backup(backup_path)
-        return {"job_id": self._runner.submit("restore", backup_id=str(backup_id))}
+        return {"job_id": self._runner.submit("restore", backup_id=str(backup_id),
+                                              confirmed_idle=bool(confirmed_idle))}
 
 
     # ---------- 导入 / 导出 ----------
