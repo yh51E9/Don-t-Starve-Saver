@@ -14,7 +14,7 @@ def test_defaults_are_complete(isolated_paths):
     assert cfg["theme_mode"] == "auto"
     assert cfg["font_size"] == 17
     assert cfg["keep"] == 10 and cfg["keep_auto"] == 5
-    assert cfg["close_action"] == "tray"
+    assert cfg["close_action"] == "ask"
     # 项目内目录存相对形式（v5.3 便携布局）
     assert cfg["backup_root"] == "data/backups"
     assert os.path.normcase(paths.resolve_portable(cfg["backup_root"])) == \
@@ -39,7 +39,7 @@ def test_invalid_enum_falls_back(isolated_paths):
     cfg = config.normalize({"theme_mode": "neon", "font_size": 99, "close_action": "explode"})
     assert cfg["theme_mode"] == "auto"
     assert cfg["font_size"] == 17
-    assert cfg["close_action"] == "tray"
+    assert cfg["close_action"] == "ask"
 
 
 def test_font_size_keeps_custom_range(isolated_paths):

@@ -30,7 +30,7 @@ DEFAULTS = {
     "auto_interval_min": 30,
     "auto_min_gap_min": 5,
     "auto_only_when_running": False,
-    "close_action": "tray",
+    "close_action": "ask",
     "save_dir": "",
     "game_dir": "",
 }

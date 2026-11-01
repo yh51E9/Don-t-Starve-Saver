@@ -664,7 +664,7 @@ export function SettingsPage() {
                       items={options.close_action.map((item) => ({
                         value: item.value,
                         label: item.label,
-                        hint: { ask: '每次点叉都问一下', tray: '后台继续自动备份（推荐）', exit: '直接退出程序' }[item.value] ?? '',
+                        hint: { ask: '每次点叉都弹窗确认（推荐）', tray: '点叉后隐藏到托盘，后台继续自动备份', exit: '点叉直接退出程序' }[item.value] ?? '',
                       }))}
                     />
                   </Row>
