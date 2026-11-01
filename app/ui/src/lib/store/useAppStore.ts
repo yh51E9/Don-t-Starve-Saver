@@ -309,15 +309,30 @@ export const useAppStore = create<AppState>((set, get) => ({
   async refreshData() {
     const selected = get().selectedSlot;
     const bridge = await getBridge();
-    const [worldsResult, stats, selectedResult] = await Promise.all([
+    const [worldsResult, stats] = await Promise.all([
       bridge.listWorlds(),
       bridge.getStats(),
-      selected ? bridge.selectWorld(selected) : Promise.resolve(null),
     ]);
+    // 选中的世界可能刚被删（删的就是它）：以新列表为准退回活着的世界。
+    // 别把 selectWorld 放进 Promise.all——它一抛错整个刷新就掀翻，列表永远停在旧状态
+    const ids = new Set(worldsResult.worlds.map((world) => String(world.id)));
+    let target = selected && ids.has(String(selected)) ? String(selected) : null;
+    if (!target && worldsResult.selected_slot && ids.has(String(worldsResult.selected_slot))) {
+      target = String(worldsResult.selected_slot);
+    }
+    if (!target) target = String(worldsResult.worlds[0]?.id ?? '') || null;
+    let backups: Backup[] = [];
+    if (target) {
+      try {
+        backups = (await bridge.selectWorld(target)).backups;
+      } catch {
+        /* 目标世界在两次调用之间消失：备份留空，下一轮刷新会补 */
+      }
+    }
     set({
       worlds: worldsResult.worlds,
-      selectedSlot: worldsResult.selected_slot ?? selected,
-      backups: selectedResult?.backups ?? [],
+      selectedSlot: target,
+      backups,
       stats,
     });
     void get().loadAvatars(avatarCharsOf(worldsResult.worlds));
