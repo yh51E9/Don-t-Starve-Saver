@@ -14,7 +14,7 @@ __pycache__/
 
 # 运行时数据（app/data/ 与部署根的 backups/）
 data/
-backups/
+/backups/
 ds_saver_config.json
 *.bak-*
 
