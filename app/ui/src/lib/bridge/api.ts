@@ -122,6 +122,8 @@ function nativeBridge(): Bridge {
     backupMods: (id) => call('backup_mods', id),
     avatarSetSource: (char, source) => call('avatar_set_source', char, source),
     deleteSave: (slotId, deleteBackups) => call('delete_save', slotId, deleteBackups),
+    undoLast: () => call('undo_last'),
+    orphanBackups: () => call('orphan_backups'),
     revealPath: (kind, backupId) => call('reveal_path', kind, backupId ?? null),
     windowAction: (action) => call('window_action', action),
     quitApp: () => call('quit_app'),

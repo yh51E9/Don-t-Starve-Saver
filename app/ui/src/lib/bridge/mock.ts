@@ -653,6 +653,16 @@ export function createMock(options: MockOptions = {}): Bridge {
       };
     },
 
+    async undoLast() {
+      await wait();
+      throw new ApiError('E_BAD_ARGS', '没有可撤销的操作');
+    },
+
+    async orphanBackups(): Promise<{ items: Backup[] }> {
+      await wait();
+      return { items: [] };
+    },
+
     async deleteSave(slotId: string, deleteBackups: boolean) {
       await wait();
       if (failOn.has('GAME_RUNNING')) {

@@ -170,6 +170,9 @@ class JobRunner:
         restored = store.restore_slot(save_dir, backup_path, on_progress=reporter,
                                       slot_id=slot_id)
 
+        from ..core import undo
+        undo.record("restore", f"恢复备份（槽位 {slot_id}）", slot_id,
+                    {"backup_id": pre.get("id", "")})
         self._bus.emit("job.done", job_id=job["id"], kind="restore", slot_id=slot_id,
                        restored=len(restored), pre_backup=models.backup_view(pre),
                        stats=store.stats(root))
@@ -239,6 +242,9 @@ class JobRunner:
                 except DsError:
                     continue
 
+        from ..core import undo
+        undo.record("delete_world", f"删除存档（槽位 {slot_id}）", slot_id,
+                    {"backup_id": pre.get("id", "")})
         self._bus.emit("job.done", job_id=job["id"], kind="delete_world", slot_id=slot_id,
                        trash_dir=trash_info["dir"], moved=trash_info["moved"],
                        removed_backups=removed_backups, freed_backups=freed_backups,

@@ -1,10 +1,12 @@
 import { Box, Group, Menu, Text } from '@mantine/core';
 import {
   IconArrowBackUp,
+  IconArrowBackUpDouble,
   IconFolderSymlink,
   IconHistory,
   IconPhotoUp,
   IconPhotoShield,
+  IconRestore,
   IconTrash,
   IconTrashX,
 } from '@tabler/icons-react';
@@ -28,6 +30,8 @@ export function WorldCard({ world, active, onClick }: Props) {
   const reveal = useAppStore((state) => state.reveal);
   const openDeleteBackups = useAppStore((state) => state.openDeleteBackups);
   const openDeleteSave = useAppStore((state) => state.openDeleteSave);
+  const undoLast = useAppStore((state) => state.undoLast);
+  const openRestoreDeleted = useAppStore((state) => state.openRestoreDeleted);
   const startAvatarUpload = useAppStore((state) => state.startAvatarUpload);
   const startAvatarPicker = useAppStore((state) => state.startAvatarPicker);
   const hasBackups = world.backup_count > 0;
@@ -88,6 +92,20 @@ export function WorldCard({ world, active, onClick }: Props) {
       </Menu.ContextMenu>
 
       <Menu.Dropdown>
+      <Menu.Label>撤销</Menu.Label>
+      <Menu.Item
+        leftSection={<IconArrowBackUpDouble size={18} stroke={1.8} />}
+        onClick={() => void undoLast()}
+      >
+        撤销刚才的操作
+      </Menu.Item>
+      <Menu.Item
+        leftSection={<IconRestore size={18} stroke={1.8} />}
+        onClick={() => void openRestoreDeleted()}
+      >
+        恢复已删除的存档槽位…
+      </Menu.Item>
+      <Menu.Divider />
       <Menu.Label>头像</Menu.Label>
       <Menu.Item
         leftSection={<IconPhotoShield size={16} stroke={1.8} />}

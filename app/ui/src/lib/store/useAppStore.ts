@@ -104,6 +104,8 @@ interface AppState {
   windowKind: 'main' | 'settings';
   settingsDraft: Partial<Config>;
   settingsDirty: boolean;
+  restoreDeletedOpen: boolean;
+  orphans: Backup[];
 
   detailsOpen: boolean;
   details: WorldDetails | null;
@@ -150,6 +152,9 @@ interface AppState {
   confirmDeleteSave: (deleteBackups: boolean) => Promise<void>;
   openDeleteBackups: (slotId: string) => void;
   confirmDeleteBackups: (keepLatest: boolean) => Promise<void>;
+  undoLast: () => Promise<void>;
+  openRestoreDeleted: () => Promise<void>;
+  closeRestoreDeleted: () => void;
   toggleDetails: (slotId?: string) => Promise<void>;
   openCandidates: () => Promise<void>;
   closeCandidates: () => void;
@@ -255,6 +260,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       : 'main',
   settingsDraft: {},
   settingsDirty: false,
+  restoreDeletedOpen: false,
+  orphans: [],
 
   detailsOpen: false,
   details: null,
@@ -534,6 +541,32 @@ export const useAppStore = create<AppState>((set, get) => ({
     } catch {
       /* 刷新失败保持原列表，按钮本身有 loading 态由调用方管 */
     }
+  },
+
+  async undoLast() {
+    try {
+      const bridge = await getBridge();
+      const result = await bridge.undoLast();
+      toast('success', '已撤销', result.label);
+      void get().refreshData();
+    } catch (error) {
+      toast('error', '无法撤销', errorText(error));
+    }
+  },
+
+  async openRestoreDeleted() {
+    set({ restoreDeletedOpen: true, orphans: [] });
+    try {
+      const bridge = await getBridge();
+      const { items } = await bridge.orphanBackups();
+      set({ orphans: items });
+    } catch (error) {
+      toast('error', '读取已删除的存档失败', errorText(error));
+    }
+  },
+
+  closeRestoreDeleted() {
+    set({ restoreDeletedOpen: false });
   },
 
   async selectWorld(id) {

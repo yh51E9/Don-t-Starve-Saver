@@ -11,8 +11,10 @@ import { ModsModal } from './features/worlds/ModsModal';
 import { AvatarUploadModal } from './components/AvatarUploadModal';
 import { AvatarPickerModal } from './components/AvatarPickerModal';
 import { AppSpotlight } from './features/spotlight/AppSpotlight';
+import { RestoreDeletedModal } from './features/worlds/RestoreDeletedModal';
 import { SettingsPage } from './pages/SettingsPage';
 import { useAppStore } from './lib/store/useAppStore';
+import { activeShortcuts, comboFromEvent, isTypingTarget } from './lib/shortcuts';
 import { buildTheme } from './theme/mantine';
 import { getPreset } from './theme/presets';
 import { buildResolver } from './theme/resolver';
@@ -34,6 +36,28 @@ function useSettingsCloseSignal() {
     window.addEventListener('ds:settings_close_requested', handler);
     return () => window.removeEventListener('ds:settings_close_requested', handler);
   }, [handler]);
+}
+
+/** 全局快捷键（仅主窗）：键位可在设置页改，输入框内不抢按键 */
+function useGlobalShortcuts(enabled: boolean) {
+  useEffect(() => {
+    if (!enabled) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.defaultPrevented || isTypingTarget(event.target)) return;
+      const combo = comboFromEvent(event);
+      if (!combo) return;
+      const hit = activeShortcuts().find((item) => item.combo === combo);
+      if (!hit) return;
+      event.preventDefault();
+      const state = useAppStore.getState();
+      if (hit.id === 'undo') void state.undoLast();
+      else if (hit.id === 'search') window.dispatchEvent(new CustomEvent('ds:spotlight'));
+      else if (hit.id === 'backup') void state.backup();
+      else if (hit.id === 'refresh') void state.refreshData();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [enabled]);
 }
 
 export default function App() {
@@ -60,6 +84,7 @@ export default function App() {
     useAppStore.setState({ previewFontSize: payload?.font ?? null });
   }), []);
   useSettingsCloseSignal();
+  useGlobalShortcuts(windowKind === 'main');
 
   // 预览优先级：本窗草稿（设置窗）> 预览广播（主窗）> 已保存配置
   const isSettingsWindow = windowKind === 'settings';
@@ -120,6 +145,7 @@ export default function App() {
         <AvatarUploadModal />
         <AvatarPickerModal />
         {windowKind === 'main' && <SaveCandidatesModal />}
+        {windowKind === 'main' && <RestoreDeletedModal />}
       </ModalsProvider>
     </MantineProvider>
   );

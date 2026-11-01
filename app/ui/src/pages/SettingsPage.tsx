@@ -21,6 +21,7 @@ import {
   IconDeviceFloppy,
   IconExternalLink,
   IconInfoCircle,
+  IconKeyboard,
   IconLayoutGrid,
   IconPalette,
   IconPower,
@@ -37,6 +38,15 @@ import { getBridge } from '../lib/bridge/api';
 import type { AvatarLibrary, Config } from '../lib/bridge/types';
 import { formatBytes } from '../lib/format';
 import { useAppStore } from '../lib/store/useAppStore';
+import {
+  activeShortcuts,
+  comboFromEvent,
+  formatCombo,
+  resetShortcuts,
+  saveShortcut,
+  type ShortcutAction,
+  type ShortcutDef,
+} from '../lib/shortcuts';
 import { PRESET_LIST } from '../theme/presets';
 import { LAYOUT } from '../theme/layout';
 import { ImageLibraryModal } from '../features/settings/ImageLibraryModal';
@@ -46,6 +56,7 @@ const NAV_ITEMS = [
   { id: 'sec-resources', label: '图片与资源', icon: IconLayoutGrid },
   { id: 'sec-backup', label: '备份', icon: IconDeviceFloppy },
   { id: 'sec-window', label: '窗口', icon: IconAppWindow },
+  { id: 'sec-shortcuts', label: '快捷键', icon: IconKeyboard },
   { id: 'sec-about', label: '关于', icon: IconInfoCircle },
 ];
 
@@ -121,6 +132,8 @@ export function SettingsPage() {
 
   const [library, setLibrary] = useState<AvatarLibrary | null>(null);
   const [changelog, setChangelog] = useState('');
+  const [shortcuts, setShortcuts] = useState<ShortcutDef[]>(() => activeShortcuts());
+  const [capturing, setCapturing] = useState<ShortcutAction | null>(null);
   const [activeSec, setActiveSec] = useState(NAV_ITEMS[0].id);
   const scrollRef = useRef<HTMLDivElement>(null);
   const programmaticUntil = useRef(0);
@@ -139,6 +152,26 @@ export function SettingsPage() {
       .then((result) => setChangelog(result.markdown))
       .catch(() => setChangelog(''));
   }, [config]);
+
+  // 改键捕获：进入捕获态后，下一次按键就是新键位（Esc 取消）
+  useEffect(() => {
+    if (!capturing) return;
+    const onKey = (event: KeyboardEvent) => {
+      event.preventDefault();
+      event.stopPropagation();
+      if (event.key === 'Escape') {
+        setCapturing(null);
+        return;
+      }
+      const combo = comboFromEvent(event);
+      if (!combo) return;
+      saveShortcut(capturing, combo);
+      setShortcuts(activeShortcuts());
+      setCapturing(null);
+    };
+    window.addEventListener('keydown', onKey, true);
+    return () => window.removeEventListener('keydown', onKey, true);
+  }, [capturing]);
 
   if (!options) return null;
 
@@ -636,6 +669,48 @@ export function SettingsPage() {
                     />
                   </Row>
           </Stack>
+              </Section>
+            </Box>
+
+            <Box id="sec-shortcuts" mt="xl">
+              <Section icon={<IconKeyboard size={16} stroke={2.2} color="var(--ds-accent)" />} title="快捷键" size="md">
+                <Stack gap={12} w="100%">
+                  <Text fz="var(--ds-fs-micro)" c="var(--ds-text-faint)" lh={1.6}>
+                    点击键位框，按下新的组合键即可修改（Esc 取消）。快捷键只在主界面生效，输入框内打字时不会触发。
+                  </Text>
+                  {shortcuts.map((item) => (
+                    <Group key={item.id} justify="space-between" wrap="nowrap" gap={12}>
+                      <Box style={{ minWidth: 0 }}>
+                        <Text fz="var(--ds-fs-meta)">{item.label}</Text>
+                        <Text fz="var(--ds-fs-micro)" c="var(--ds-text-faint)">{item.hint}</Text>
+                      </Box>
+                      <Button
+                        variant={capturing === item.id ? 'light' : 'default'}
+                        color={capturing === item.id ? 'red' : 'gray'}
+                        size="compact-sm"
+                        miw={120}
+                        className="ds-mono"
+                        onClick={() => setCapturing(capturing === item.id ? null : item.id)}
+                      >
+                        {capturing === item.id ? '按下新键…' : formatCombo(item.combo)}
+                      </Button>
+                    </Group>
+                  ))}
+                  <Group justify="flex-end">
+                    <Button
+                      variant="default"
+                      size="sm"
+                      leftSection={<IconRotate2 size={16} stroke={1.8} />}
+                      onClick={() => {
+                        resetShortcuts();
+                        setShortcuts(activeShortcuts());
+                        setCapturing(null);
+                      }}
+                    >
+                      恢复默认
+                    </Button>
+                  </Group>
+                </Stack>
               </Section>
             </Box>
 

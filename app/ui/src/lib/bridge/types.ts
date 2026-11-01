@@ -379,6 +379,8 @@ export interface Bridge {
   avatarAssignFrom(char: string, sourceChar: string): Promise<{ assigned: boolean; char?: string; from?: string }>;
   getChangelog(): Promise<{ markdown: string }>;
   deleteSave(slotId: string, deleteBackups: boolean): Promise<{ job_id: string | null }>;
+  undoLast(): Promise<{ kind: string; label: string; slot_id?: string; stats?: unknown }>;
+  orphanBackups(): Promise<{ items: Backup[] }>;
   revealPath(kind: 'backup_root' | 'backup' | 'save_dir' | 'log_dir', backupId?: string): Promise<{ opened: boolean }>;
   windowAction(action: 'minimize' | 'hide' | 'close'): Promise<{ handled: boolean }>;
   quitApp(): Promise<{ quitting: boolean }>;

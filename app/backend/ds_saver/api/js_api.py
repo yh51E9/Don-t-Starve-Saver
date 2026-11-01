@@ -244,12 +244,60 @@ class JsApi:
     @guard
     def delete_backup(self, backup_id):
         result = store.delete_backup(self._session.backup_root(), backup_id)
+        from ..core import undo
+        undo.record("delete_backup", f"删除备份（槽位 {result['slot_id']}）", result["slot_id"],
+                    {"trash_path": result["trash_path"]})
         return {
             "deleted": True,
             "freed_bytes": result["freed_bytes"],
             "backups": self._session.backups(result["slot_id"]),
             "stats": store.stats(self._session.backup_root()),
         }
+
+    @guard
+    def undo_last(self):
+        """撤销最近一次危险操作（删除存档 / 恢复 / 删备份）。"""
+        from ..core import undo
+
+        entry = undo.last()
+        if entry is None:
+            raise DsError(ErrorCode.BAD_ARGS, "没有可撤销的操作")
+        session = self._session
+        root = session.backup_root()
+        save_dir = session.save_dir
+        kind = entry["kind"]
+        payload = entry.get("payload") or {}
+
+        if kind in ("delete_world", "restore"):
+            if not save_dir:
+                raise DsError(ErrorCode.SAVE_DIR_INVALID, "还没有指定存档目录")
+            slot_id, path = store.resolve_backup_id(root, str(payload.get("backup_id") or ""))
+            restored = store.restore_slot(save_dir, path, slot_id=str(slot_id))
+            session.refresh_worlds()
+            self._bus.emit("data.backups_changed", slot_id=str(slot_id))
+            undo.remove(entry["id"])
+            return {"kind": kind, "label": entry["label"], "restored": len(restored),
+                    "slot_id": str(slot_id), "stats": store.stats(root)}
+
+        if kind == "delete_backup":
+            result = store.undelete_backup(root, str(payload.get("trash_path") or ""))
+            self._bus.emit("data.backups_changed", slot_id=result["slot_id"])
+            undo.remove(entry["id"])
+            return {"kind": kind, "label": entry["label"], "slot_id": result["slot_id"],
+                    "backups": session.backups(result["slot_id"]),
+                    "stats": store.stats(root)}
+
+        raise DsError(ErrorCode.BAD_ARGS, f"这种操作不支持撤销：{kind}")
+
+    @guard
+    def orphan_backups(self):
+        """已删除/被替换世界的残留快照（save_id 不属于任何当前世界）。"""
+        from ..core import models
+
+        worlds = self._session.worlds_copy()
+        items = store.orphan_backups(self._session.backup_root(),
+                                     [str(w.get("save_id") or "") for w in worlds])
+        return {"items": [models.backup_view(item) for item in items]}
 
     @guard
     def cleanup(self, scope="all", slot_id=None):

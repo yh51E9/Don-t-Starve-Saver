@@ -78,27 +78,13 @@ export function AppSpotlight() {
   ], [worlds, autoOn, setView, selectWorld, backup, cleanup, toggleAuto, reveal]);
 
   useEffect(() => {
+    // 按键统一走 lib/shortcuts 的全局分发（键位可改），这里只保留命令面板入口
     const open = () => spotlight.open();
-    const onKey = (event: KeyboardEvent) => {
-      const mod = event.ctrlKey || event.metaKey;
-      const key = event.key.toLowerCase();
-      if (mod && (key === 'f' || key === 'k')) {
-        // Ctrl+F 为主键：拦下来，别让 WebView 弹浏览器查找
-        event.preventDefault();
-        spotlight.open();
-      }
-      if (mod && key === 'b') {
-        event.preventDefault();
-        void backup();
-      }
-    };
     window.addEventListener('ds:spotlight', open);
-    window.addEventListener('keydown', onKey);
     return () => {
       window.removeEventListener('ds:spotlight', open);
-      window.removeEventListener('keydown', onKey);
     };
-  }, [backup]);
+  }, []);
 
   return (
     <Spotlight

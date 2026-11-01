@@ -390,15 +390,60 @@ def enforce_from_config(backup_root: str, slot_id: str, cfg: dict) -> tuple[int,
 
 
 def delete_backup(backup_root: str, backup_id: str) -> dict:
+    """删除一份备份：移入回收站（可撤销），不再直接粉碎。"""
     slot_id, path = resolve_backup_id(backup_root, backup_id)
     if not os.path.isdir(path):
         raise DsError(ErrorCode.BACKUP_NOT_FOUND, "这份备份已经不在了", {"id": backup_id})
     size = _dir_size(path)
+    dir_name = os.path.basename(path)
+    stamp = time.strftime("%Y%m%d_%H%M%S") + f"_{os.getpid()}"
+    target = os.path.join(trash_dir(backup_root, stamp), f"slot_{_safe_component(str(slot_id))}", dir_name)
     try:
-        shutil.rmtree(path)
+        os.makedirs(os.path.dirname(target), exist_ok=True)
+        shutil.move(path, target)
     except OSError as exc:
         raise DsError(ErrorCode.IO, f"删除失败：{exc}", {"id": backup_id}) from exc
-    return {"slot_id": slot_id, "freed_bytes": size}
+    return {"slot_id": slot_id, "freed_bytes": size,
+            "trash_path": target, "dir_name": dir_name}
+
+
+def undelete_backup(backup_root: str, trash_path: str) -> dict:
+    """把回收站里的一份备份移回备份库（delete_backup 的撤销）。"""
+    if not os.path.isdir(trash_path):
+        raise DsError(ErrorCode.BACKUP_NOT_FOUND, "回收站里已经没有这份备份了", {"path": trash_path})
+    dir_name = os.path.basename(trash_path)
+    # 回收站布局：_trash/<时间戳>/slot_<id>/<dir_name>
+    parent = os.path.dirname(trash_path)
+    slot_part = os.path.basename(parent)
+    if not slot_part.startswith("slot_"):
+        raise DsError(ErrorCode.PARSE, "回收站目录结构不对，无法定位原槽位", {"path": trash_path})
+    slot_id = slot_part[len("slot_"):]
+    dest = os.path.join(slot_dir(backup_root, slot_id), dir_name)
+    if os.path.exists(dest):
+        raise DsError(ErrorCode.IO, "原位置已有同名备份，无法恢复", {"path": dest})
+    os.makedirs(os.path.dirname(dest), exist_ok=True)
+    shutil.move(trash_path, dest)
+    return {"slot_id": slot_id, "dir_name": dir_name, "path": dest,
+            "backup_id": make_backup_id(slot_id, dir_name)}
+
+
+def orphan_backups(backup_root: str, world_save_ids: list[str]) -> list[dict]:
+    """save_id 不属于任何当前世界的备份——已删除/被替换世界的残留快照。
+
+    save_id 为空的老备份无法判定归属，不列入。
+    """
+    known = {str(s) for s in world_save_ids if s}
+    items = []
+    for entry in os.listdir(backup_root) if os.path.isdir(backup_root) else []:
+        if not entry.startswith("slot_"):
+            continue
+        slot_id = entry[len("slot_"):]
+        for item in list_backups(backup_root, slot_id):
+            save_id = str(item.get("save_id") or "")
+            if save_id and save_id not in known:
+                items.append(item)
+    items.sort(key=lambda b: b.get("stamp") or "", reverse=True)
+    return items
 
 
 # ---------------- 删除存档（移入回收站，可回滚） ----------------
