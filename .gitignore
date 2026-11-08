@@ -26,3 +26,6 @@ logs/
 
 # WorkBuddy 工作区数据（会话记忆/计划，仅本机）
 .workbuddy/
+
+# 接手文档（内部工作文件，换 agent 用，不入库）
+HANDOVER.md
