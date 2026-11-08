@@ -46,7 +46,7 @@ def test_font_size_keeps_custom_range(isolated_paths):
     # 14-22 全是合法自定义字号：14 不再被旧迁移表夹成 15（曾导致选 14 保存后回 15）
     assert config.normalize({"font_size": 14})["font_size"] == 14
     assert config.normalize({"font_size": 22})["font_size"] == 22
-    # v5.4 五档制：16/18 是合法档位，绝不能再被旧迁移映射掉
+    # 14-22 任意档位都合法：16/18 不能再被旧迁移映射掉
     assert config.normalize({"font_size": 16})["font_size"] == 16
     assert config.normalize({"font_size": 18})["font_size"] == 18
     assert config.normalize({"font_size": 17})["font_size"] == 17

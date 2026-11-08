@@ -4,7 +4,8 @@ import { LAYOUT } from './layout';
 import type { Preset, SchemeTokens } from './tokens';
 
 /**
- * 三档字号（配置里的 font_size 15/17/19），每档都是整数 px——
+ * 字号比例表：滑杆 14–22px 共 9 档，其中 15–19 五档在此手工调校，
+ * 其余档位由 scaleFor 的公式兜底。每档都是整数 px——
  * 小数 px 会让 WebView2 做亚像素渲染，小字全部发虚，这是"字糊"的根因。
  */
 const FONT_SCALES: Record<number, { micro: number; meta: number; body: number; title: number }> = {
@@ -15,7 +16,7 @@ const FONT_SCALES: Record<number, { micro: number; meta: number; body: number; t
   19: { micro: 14, meta: 15, body: 17, title: 20 },
 };
 
-/** 自定义字号（14-22）用同比例公式兜底，五档预设仍走表。 */
+/** 9 档取值：命中 FONT_SCALES（15–19 有调校表）用调校值，其余档位同比例公式兜底。 */
 function scaleFor(fontSize: number): { micro: number; meta: number; body: number; title: number } {
   return FONT_SCALES[fontSize] ?? {
     micro: Math.max(11, fontSize - 4),

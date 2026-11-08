@@ -144,7 +144,7 @@ def test_settings_roundtrip(api):
     result = api.save_settings({"theme_preset": "brass", "font_size": 18, "keep": 3})
     assert result["ok"] is True
     assert result["data"]["config"]["theme_preset"] == "brass"
-    assert api.get_settings()["data"]["config"]["font_size"] == 18  # 五档制：18 原样保存
+    assert api.get_settings()["data"]["config"]["font_size"] == 18  # 自定义字号 14-22：18 原样保存
 
 
 def test_cancel_unknown_job(api):

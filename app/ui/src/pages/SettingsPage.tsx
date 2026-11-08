@@ -383,7 +383,7 @@ export function SettingsPage() {
                     />
                   </Row>
 
-                {/* 卡片：界面字号（五档标实际 px + 自定义） */}
+                {/* 卡片：界面字号（滑杆 14-22px，共 9 档） */}
                                   <Row label="界面字号" hint="拖动即时预览，松手记入草稿；14-22px 任意档位">
             <Stack gap={10} w="100%">
               <Slider
