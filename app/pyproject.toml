@@ -1,6 +1,6 @@
 [project]
 name = "ds-saver"
-version = "1.0.0"
+version = "1.0.1"
 description = "饥荒单机版存档备份工具"
 requires-python = ">=3.13"
 dependencies = [
